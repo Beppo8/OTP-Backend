@@ -13,5 +13,8 @@ defmodule Teacher.Coins do
     end
   end
 
+  def all_coins do
+    CoinWorker.all_coins()
+  end
 
 end

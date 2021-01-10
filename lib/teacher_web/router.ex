@@ -16,7 +16,7 @@ defmodule TeacherWeb.Router do
   scope "/", TeacherWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    resources "/", PageController, only: [:index, :create]
   end
 
   # Other scopes may use custom stacks.

@@ -1,4 +1,8 @@
 <h2>Track Cryptocurrencies</h2>
+<%= for coin <- @conins do %>
+  <p><%= String.capitalize(coin.name) %>: $<%=  Float.round(coin.price, 4)%></p>
+<%= end %>
+
 <%= form_for @conn, "#", fn f -> %>
   <%= label f, :name %>
   <%= text_input f, :name, placeholder: "bitcoin" %>
