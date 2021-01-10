@@ -11,7 +11,8 @@ defmodule Teacher.Application do
       # Start the Ecto repository
       Teacher.Repo,
       # Start the endpoint when the application starts
-      TeacherWeb.Endpoint
+      TeacherWeb.Endpoint,
+      Teacher.Workers.CoinWorker
       # Starts a worker by calling: Teacher.Worker.start_link(arg)
       # {Teacher.Worker, arg},
     ]
