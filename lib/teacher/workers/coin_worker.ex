@@ -14,6 +14,7 @@ defmodule Teacher.Workers.CoinWorker do
   end
 
   def init(state) do
+    schedule_coin_refresh()
     {:ok, state}
   end
 
@@ -23,6 +24,26 @@ defmodule Teacher.Workers.CoinWorker do
 
   def handle_call(:all_coins, _from, state) do
     {:reply, state, state}
+  end
+
+  def handle_info(:update_coins, state) do
+    {:noreply, state, {:continue, :get_coin_prices}}
+  end
+
+  def handle_continue(:get_coin_prices,state) do
+    updated_coin_prices = update_coin_prices(state)
+    schedule_coin_refresh()
+    {:noreply, updated_coin_prices}
+  end
+
+  defp update_coin_prices(state) do
+    state
+    |> Task.async_stream(&(Teacher.Coins.update_price(&1)))
+    |> Enum.map(fn({:ok, result}) -> result end)
+  end
+
+  defp schedule_coin_refresh do
+    Process.send_after(self(), :update_coins, 60_000)
   end
 
 end

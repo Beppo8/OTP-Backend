@@ -17,4 +17,13 @@ defmodule Teacher.Coins do
     CoinWorker.all_coins()
   end
 
+  def update_price(coin) do
+    case CoinService.fetch_current_price(coin.name) do
+      {:ok, price} ->
+        %{coin | price: price}
+      {:error, _msg} ->
+          coin
+    end
+  end
+
 end
