@@ -3,8 +3,9 @@
   <p><%= String.capitalize(coin.name) %>: $<%=  Float.round(coin.price, 4)%></p>
 <%= end %>
 
-<%= form_for @conn, "#", fn f -> %>
+<%= form_for @changeset, Routes.page_path(@conn, :create), fn f -> %>
   <%= label f, :name %>
-  <%= text_input f, :name, placeholder: "bitcoin" %>
+  <%= text_input f, :name, placeholder: "bitcoin", required: true %>
+  <%= error_tag f, :name %>
   <%= submit "Submit" %>
 <% end %>

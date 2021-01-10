@@ -1,19 +1,37 @@
 defmodule Teacher.Coins do
 
-  alias Teacher.Coins.CoinService
+  alias Teacher.Repo
+  alias Teacher.Coins.{CoinService, Cryptocurrency}
   alias Teacher.Workers.CoinWorker
 
-  def add_coin(name) do
-    case CoinService.fetch_current_price(name) do
-      {:ok, price} ->
-        CoinWorker.add_coin(%{name: name, price: price})
-        {:ok, price}
-      {:error, msg} ->
-        {:error, msg}
-    end
+  def track_coin(name) do
+    with {:ok, price} <- CoinService.fetch_current_price(name),
+         {:ok, cryptocurrency} <- insert_coin(%{"name" => name, "price" => price}) do
+      CoinWorker.add_coin(cryptocurrency)
+      {:ok, cryptocurrency.price}
+      else
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:error, changeset}
+
+        {:error, msg} ->
+          %Cryptocurrency{}
+          |> change_cryptocurrency(%{"name" => name})
+          |> Ecto.Changeset.add_error(:name, msg)
+          |> Ecto.Changeset.apply_action(:insert)
+      end
   end
 
-  def all_coins do
+  def change_cryptocurrency(%Cryptocurrency{} = cryptocurrency, attrs \\ %{}) do
+    Cryptocurrency.changeset(cryptocurrency, attrs)
+  end
+
+  def insert_coin(attrs) do
+    %Cryptocurrency{}
+    |> Cryptocurrency.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def tracked_coins do
     CoinWorker.all_coins()
   end
 
