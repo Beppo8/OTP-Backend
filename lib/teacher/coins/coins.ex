@@ -4,6 +4,10 @@ defmodule Teacher.Coins do
   alias Teacher.Coins.{CoinService, Cryptocurrency}
   alias Teacher.Workers.CoinWorker
 
+  def list_coins do
+    Repo.all(Cryptocurrency)
+  end
+
   def track_coin(name) do
     with {:ok, price} <- CoinService.fetch_current_price(name),
          {:ok, cryptocurrency} <- insert_coin(%{"name" => name, "price" => price}) do
@@ -36,12 +40,25 @@ defmodule Teacher.Coins do
   end
 
   def update_price(coin) do
-    case CoinService.fetch_current_price(coin.name) do
-      {:ok, price} ->
-        %{coin | price: price}
-      {:error, _msg} ->
-          coin
+    with {:ok, price} <- CoinService.fetch_current_price(coin.name),
+         {:ok, updated_coin} <- update_cryptocurrency(coin, %{"price" => price}) do
+      updated_coin
+    else
+      {:error, _} ->
+        coin
     end
+    # case CoinService.fetch_current_price(coin.name) do
+    #   {:ok, price} ->
+    #     %{coin | price: price}
+    #   {:error, _msg} ->
+    #       coin
+    # end
+  end
+
+  def update_cryptocurrency(%Cryptocurrency{} = cryptocurrency, attrs) do
+    cryptocurrency
+    |> Cryptocurrency.changeset(attrs)
+    |> Repo.update()
   end
 
 end

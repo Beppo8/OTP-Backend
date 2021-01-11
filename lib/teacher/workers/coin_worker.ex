@@ -1,6 +1,7 @@
 defmodule Teacher.Workers.CoinWorker do
   use GenServer
 
+  #API
   def start_link(_state) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
@@ -13,9 +14,10 @@ defmodule Teacher.Workers.CoinWorker do
     GenServer.call(__MODULE__, :all_coins)
   end
 
+  #CALLBACKS
   def init(state) do
     schedule_coin_refresh()
-    {:ok, state}
+    {:ok, state, {:continue, :load_coins}}
   end
 
   def handle_cast({:add_coin, coin}, state) do
@@ -28,6 +30,11 @@ defmodule Teacher.Workers.CoinWorker do
 
   def handle_info(:update_coins, state) do
     {:noreply, state, {:continue, :get_coin_prices}}
+  end
+
+  def handle_continue(:load_coins, _state) do
+    coins = Teacher.Coins.list_coins()
+    {:noreply, coins}
   end
 
   def handle_continue(:get_coin_prices,state) do
