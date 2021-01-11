@@ -42,6 +42,10 @@ defmodule Teacher.Coins do
   def update_price(coin) do
     with {:ok, price} <- CoinService.fetch_current_price(coin.name),
          {:ok, updated_coin} <- update_cryptocurrency(coin, %{"price" => price}) do
+      TeacherWeb.Endpoint.broadcast("coin_tracker", "update", %{
+        name: updated_coin.name,
+        price: Float.round(updated_coin.price, 4)
+      })
       updated_coin
     else
       {:error, _} ->
